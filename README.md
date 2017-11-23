@@ -22,7 +22,7 @@ If, for example, blog storage were to ALWAYs fire before the queue binding, I wo
 
 I then have 4 functions:
 
-## 1: blob-queue-blobbinding-queuebinding : 
+## 1: blob-queue-blobbinding-queuebinding 
 - executes the blob binding, in code, before the queue binding
 - has the blob binding definition (in function.json) before the queue binding definition
 
@@ -40,9 +40,24 @@ I then have 4 functions:
 
 ## Running Locally
 
-1. Install the function app
-2. Create a storage account
-3. Set up your lo
+1. Clone the function app code
+2. Using the Azure portal, create a storage account
+    - within that storage account, create a queue called `outputqueue`
+3. Set up your `local.settings.json` something like this...
+
+```
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "QueueStorageConnectionString": "[ADD CONNECTION STRING TO YOUR STORAGE ACCOUNT HERE]",
+    "ThisConnectionStringIsBroken": "broken"
+  }
+}
+```
+ ## Deploying to Azure
+
+ When you deploy this to azure, remember to set up 2 Application Settings `QueueStorageConnectionString` and `ThisConnectionStringIsBroken` with the same values as those in your `local.settings.json`.
 
 # Results
 

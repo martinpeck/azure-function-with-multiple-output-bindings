@@ -100,4 +100,9 @@ This suggests:
 2. all bindings are being run AFTER `context.done()`
 3. all binding are run, regardless of any one binding failing
 
+# Conclusions
+
+1. Runtime 1 and 2 execute bindings differently. Runtime 1 respects the order of 'function.json' where as Runtime 2 appears to run all bindings, regardless of errors
+2. Anecdotally it's understood that "blob bindings run before other bindings" but for neither of these runtimes do I see this being upheld.
+
 

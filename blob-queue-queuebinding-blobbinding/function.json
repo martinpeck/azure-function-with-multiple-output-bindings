@@ -1,0 +1,30 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "type": "queue",
+      "name": "outqueue",
+      "queueName": "outqueue",
+      "connection": "QueueStorageConnectionString",
+      "direction": "out"
+    },
+    {
+      "type": "blob",
+      "name": "outblob",
+      "path": "outcontainer/{rand-guid}",
+      "connection": "ThisConnectionStringIsBroken",
+      "direction": "out"
+    }
+  ]
+}

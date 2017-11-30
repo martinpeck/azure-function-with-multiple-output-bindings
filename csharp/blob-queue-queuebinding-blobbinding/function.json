@@ -1,0 +1,30 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "function",
+      "name": "req",
+      "type": "httpTrigger",
+      "direction": "in"
+    },
+    {
+      "name": "$return",
+      "type": "http",
+      "direction": "out"
+    },
+    {
+      "type": "queue",
+      "name": "outqueue",
+      "queueName": "outqueue",
+      "connection": "QueueStorageConnectionString",
+      "direction": "out"
+    },
+    {
+      "type": "blob",
+      "name": "outblob",
+      "path": "outcontainer/file.jpg",
+      "connection": "ThisConnectionStringIsBroken",
+      "direction": "out"
+    }
+  ]
+}

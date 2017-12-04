@@ -14,7 +14,7 @@ I wanted to determine whether the order in which the function code calls the bin
 - try each order of code execution
 - try each order of binding definition
 
-## Method
+## Method for Node
 
 It's difficult to see from logs which order the bindings fire, so in order to determine the order I **deliberately** break the blob storage binding by giving it a bad/invalid connection string. I then look at when this error is logged, and whether items are added to the queue or not.
 
@@ -22,23 +22,23 @@ If, for example, blog storage were to ALWAYs fire before the queue binding, I wo
 
 I then have 4 functions:
 
-## 1: blob-queue-blobbinding-queuebinding 
+### 1: blob-queue-blobbinding-queuebinding 
 - executes the blob binding, in code, before the queue binding
 - has the blob binding definition (in function.json) before the queue binding definition
 
-## 2: blob-queue-queuebinding-blobbinding
+### 2: blob-queue-queuebinding-blobbinding
 - executes the blob binding, in code, before the queue binding
 - has the queue binding definition (in function.json) before the blob binding definition
 
-## 3: queue-blob-blobbinding-queuebinding
+### 3: queue-blob-blobbinding-queuebinding
 - executes the queue binding, in code, before the blob binding
 - has the blob binding definition (in function.json) before the queue binding definition
 
-## 4: queue-blob-queuebinding-blobbinding
+### 4: queue-blob-queuebinding-blobbinding
 - executes the queue binding, in code, before the blob binding
 - has the queue binding definition (in function.json) before the blob binding definition
 
-## Running Locally
+### Running Locally
 
 1. Clone the function app code
 2. Using the Azure portal, create a storage account
@@ -55,13 +55,13 @@ I then have 4 functions:
   }
 }
 ```
- ## Deploying to Azure
+ ### Deploying to Azure
 
  When you deploy this to azure, remember to set up 2 Application Settings `QueueStorageConnectionString` and `ThisConnectionStringIsBroken` with the same values as those in your `local.settings.json`.
 
-# Results
+## Results
 
-## Running locally (runtime 2)
+### Running locally (runtime 2)
 
 Using the following tooling...
 
@@ -79,7 +79,7 @@ This suggests:
 2. all bindings are being run AFTER `context.done()`
 3. all binding are run, regardless of any one binding failing.
 
-## Running in Azure (Runtime 1)
+### Running in Azure (Runtime 1)
 
 At the time of testing, this uses...
 
@@ -98,7 +98,7 @@ This suggests:
 2. binding order IS important, as we only see messages when the queue binding is first
 3. all bindings are being run AFTER `context.done()`
 
-## Running in Azure (runtime 2)
+### Running in Azure (runtime 2)
 
 At the time of testing, this uses...
 
@@ -115,9 +115,25 @@ This suggests:
 2. all bindings are being run AFTER `context.done()`
 3. all binding are run, regardless of any one binding failing
 
-# Conclusions
+## Conclusions for Node
 
 1. Runtime 1 and 2 execute bindings differently. Runtime 1 respects the order of 'function.json' where as Runtime 2 appears to run all bindings, regardless of errors
 2. Anecdotally it's understood that "blob bindings run before other bindings" but for neither of these runtimes do I see this being upheld.
 
+# Method for C# - csx
 
+The main difference for C# (csx) is that the runtime validates that the storage account connection is valid before hosting the functions. So we must find a different way to make it fail. One way to do it is to create a blob in storage and acquire a lease on it. Then update the storage bindings to create that same file name. That's why the C# bindings all have the following:
+```javasscript
+    {
+      "type": "blob",
+      "name": "outblob",
+      "path": "outcontainer/file.jpg",
+      "connection": "ThisConnectionStringIsBroken",
+      "direction": "out"
+    },
+```
+
+## Conclusion for C#
+
+1. Runtime 1 and 2 validate the storage connection string for storage, which is different to how they behave with Node.js functions.
+2. Runtime 1 and 2 return 500 error status codes for all four functions, and nothing is written to the queue, which again is different from the Node.js functions. Runtime 1 will show the error content in the 500 errors, while Runtime 2 doesn't (returns an empty body). It upholds the notion that "blob bindings run before other bindings" (as it fails in all four cases and nothing is writting to the queue).
